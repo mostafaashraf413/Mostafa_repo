@@ -9,9 +9,17 @@ Created on Fri Jan 29 14:20:33 2021
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
+from torch.distributions.normal import Normal
+
+def sample_from(mu, log_var):
+    epsilon = Normal(0, 1).sample((mu.shape[0], mu.shape[1]))
+    sample = mu + (torch.exp(log_var / 2) * epsilon)
+    return sample
+    
+    
 
 class Encoder(nn.Module):
-    def __init__(self, k = 256):
+    def __init__(self, k):
         
         super().__init__()
         self.conv_0 = nn.Conv2d(in_channels = 3, out_channels = 32, kernel_size = 64)
@@ -63,8 +71,10 @@ class Encoder(nn.Module):
     
     
 class Decoder(nn.Module):
-    def __init__(self):
+    def __init__(self, k):
         super().__init__()
+        
+        self.l_0 = nn.Linear(k, 9216)
         
         self.conv_3 = nn.ConvTranspose2d(in_channels = 64, out_channels = 64, kernel_size = 8)
         self.batch_norm_3 = nn.BatchNorm2d(num_features = 64)
@@ -85,6 +95,7 @@ class Decoder(nn.Module):
 
     def forward(self, x):
         
+        x = self.l_0(x)
         x = x.view(x.shape[0], 64, 12, 12)
         
         x = self.conv_3(x)
@@ -109,33 +120,41 @@ class Decoder(nn.Module):
         
         x = self.sigmoid(x)
         
+        return x
         
         
         
 if __name__ == '__main__':
     import cv2
     import matplotlib.pyplot as plt
+    import utils
     
-    imgs = []
-    for i in ['000011.jpg', '000001.jpg', '000002.jpg', '000003.jpg']:
-        img = cv2.imread('../data/faces/img_align_celeba/'+i )
-        img = cv2.resize(img, (128, 128))  
-        plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    input_imgs =  ['../data/faces/img_align_celeba/'+i for i in ['000011.jpg', '000001.jpg', 
+                                                                 '000002.jpg', '000003.jpg']]
+    
+    for i in input_imgs:
+        plt.imshow(cv2.cvtColor(cv2.imread(i), cv2.COLOR_BGR2RGB))
         plt.show()
-        imgs.append(img)
 
-
-    input_imgs = torch.FloatTensor(imgs).permute(0,3,1,2)
+    input_imgs = utils.process_in(input_imgs)
     print('input batch shape', input_imgs.shape)
     
-    enc = Encoder()
+    enc = Encoder(k = 256)
     mu_vec, log_var_vec = enc(input_imgs)
     print('output mu shape', mu_vec.shape)
     print('output lgo_var shape', log_var_vec.shape)
     
+    new_samples = sample_from(mu_vec, log_var_vec)
     
-    dec = Decoder()
+    dec = Decoder(k = 256)
     decoded_imgs = dec(mu_vec)
+    
+    decoded_imgs = utils.process_out(decoded_imgs)
+    
+    for i in range(decoded_imgs.shape[0]):
+        plt.imshow(cv2.cvtColor(decoded_imgs[i], cv2.COLOR_BGR2RGB))
+        plt.show()        
+    
     
     
     
