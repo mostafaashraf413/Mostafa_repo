@@ -10,6 +10,10 @@ import cv2
 import matplotlib.pyplot as plt
 import torch
 
+from os import listdir
+from os.path import isfile, join
+from random import sample 
+
 
 def process_in(paths):
     batch = []
@@ -31,3 +35,59 @@ def process_out(imgs):
     imgs = imgs.detach().numpy()
     return imgs    
     
+
+
+class FacesGenerator:
+    
+    def __init__(self, faces_dir = '../data/faces/img_align_celeba', batch_size = 256, test_ratio = 0):
+        self.faces_dir = faces_dir
+        self.batch_size = batch_size
+        self.test_ratio = test_ratio
+        
+        self.all_faces = [join(self.faces_dir, f) for f in listdir(self.faces_dir) if isfile(join(self.faces_dir, f))]
+        self.n_batches = (len(self.all_faces) // batch_size) + 1
+        
+    
+    def generate_faces(self):
+        for i in range(self.n_batches):
+            batch = sample(self.all_faces, self.batch_size) 
+            yield i, batch
+        
+        
+        
+        
+        
+if __name__ == '__main__':
+    for i, batch in FacesGenerator().generate_faces():
+        print(i)
+        print('#######################')
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
