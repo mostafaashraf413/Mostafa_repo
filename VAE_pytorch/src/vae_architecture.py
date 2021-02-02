@@ -133,6 +133,7 @@ if __name__ == '__main__':
     import cv2
     import matplotlib.pyplot as plt
     import utils
+    # import scipy.misc
     
     input_imgs =  ['../data/faces/img_align_celeba/'+i for i in ['000011.jpg', '000001.jpg', 
                                                                  '000002.jpg', '000003.jpg']]
@@ -144,16 +145,20 @@ if __name__ == '__main__':
     input_imgs = utils.process_in(input_imgs)
     print('input batch shape', input_imgs.shape)
     
-    # vae = VAE(k = 256)
-    decoded_imgs, mu_vec, log_var_vec = vae(input_imgs.to('cuda'))
+    vae = VAE(k = 256)
+    vae.load_state_dict(torch.load('../models/vae_faces.model'))
+    
+    decoded_imgs, mu_vec, log_var_vec = vae(input_imgs)
     print('output mu shape', mu_vec.shape)
     print('output lgo_var shape', log_var_vec.shape)
     
-    decoded_imgs = utils.process_out(decoded_imgs.cpu())
+    decoded_imgs = utils.process_out(decoded_imgs)
     
     for i in range(decoded_imgs.shape[0]):
-        # plt.imshow(cv2.cvtColor(decoded_imgs[i], cv2.COLOR_BGR2RGB))
-        plt.imshow(decoded_imgs[i])
+        
+        # bgr_im = scipy.misc.toimage(decoded_imgs[i])
+        plt.imshow(cv2.cvtColor(decoded_imgs[i], cv2.COLOR_BGR2RGB))
+        # plt.imshow(decoded_imgs[i])
         plt.show()        
     
     

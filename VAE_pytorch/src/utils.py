@@ -13,6 +13,7 @@ import torch
 from os import listdir
 from os.path import isfile, join
 from random import sample 
+import numpy as np
 
 
 def process_in(paths):
@@ -32,7 +33,8 @@ def process_out(imgs):
     
     imgs = imgs.permute(0,2,3,1)
     imgs = imgs * 255
-    imgs = imgs.detach().numpy().astype(int)
+    imgs = imgs.detach().numpy()
+    imgs = np.round(imgs).astype(np.uint8)
     return imgs    
     
 

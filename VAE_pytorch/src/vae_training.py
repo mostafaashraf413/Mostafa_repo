@@ -19,7 +19,11 @@ print('device = ', device)
 loss_criterion = nn.MSELoss(reduction = 'mean')
 r_loss_factor = 1e4
 k = 256
-vae = VAE(k = k).to(device)
+
+vae = VAE(k = k)
+vae.load_state_dict(torch.load('../models/vae_faces.model'))
+vae = vae.to(device)
+
 lr = 5e-4
 optimizer = optim.Adam(vae.parameters(), lr = lr)
 n_epochs = 200
@@ -40,9 +44,8 @@ def vae_loss(y_true, y_pred, mu, log_var):
 
 def train():
     
-    
     face_gen = FacesGenerator(batch_size = batch_size) 
-    
+    vae.train()
     print(datetime.now().time(), 'VAE training has been started')
     for epoch in range(n_epochs):
         epoch_loss = 0
@@ -59,10 +62,11 @@ def train():
             
             if batch_num % 100 == 0:
                 print(datetime.now().time(), ' # epoch %d, batch %d, batch_loss = %f'%(epoch, batch_num, total_loss.item()))
-            
+                torch.save(vae.state_dict(), '../models/vae_faces.model')
+                
         avg_epoch_loss = epoch_loss/(batch_num+1)
         print(datetime.now().time(), ' +--> epoch %d: training_loss = %f'%(epoch, avg_epoch_loss))
-        torch.save(vae.state_dict(), '../models/vae_faces.model')
+        
 
 
 
