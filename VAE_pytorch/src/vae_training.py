@@ -14,14 +14,16 @@ from datetime import datetime
 
 # parameters:
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('device = ', device)
+
 loss_criterion = nn.MSELoss(reduction = 'mean')
 r_loss_factor = 1e4
 k = 256
 vae = VAE(k = k).to(device)
 lr = 5e-4
 optimizer = optim.Adam(vae.parameters(), lr = lr)
-n_epochs = 3
-batch_size = 256
+n_epochs = 200
+batch_size = 32
 
 
 def vae_kl_loss(mu, log_var):
@@ -54,10 +56,13 @@ def train():
             optimizer.zero_grad()
             total_loss.backward()
             optimizer.step()
-            print(datetime.now().time(), ' -- batch %d, batch_loss = %f'%(batch_num, total_loss.item()))
+            
+            if batch_num % 100 == 0:
+                print(datetime.now().time(), ' # epoch %d, batch %d, batch_loss = %f'%(epoch, batch_num, total_loss.item()))
             
         avg_epoch_loss = epoch_loss/(batch_num+1)
-        print(datetime.now().time(), 'epoch %d: training_loss = %f'%(epoch, avg_epoch_loss))
+        print(datetime.now().time(), ' +--> epoch %d: training_loss = %f'%(epoch, avg_epoch_loss))
+        torch.save(vae.state_dict(), '../models/vae_faces.model')
 
 
 

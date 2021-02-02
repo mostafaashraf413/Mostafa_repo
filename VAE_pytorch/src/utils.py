@@ -32,7 +32,7 @@ def process_out(imgs):
     
     imgs = imgs.permute(0,2,3,1)
     imgs = imgs * 255
-    imgs = imgs.detach().numpy()
+    imgs = imgs.detach().numpy().astype(int)
     return imgs    
     
 

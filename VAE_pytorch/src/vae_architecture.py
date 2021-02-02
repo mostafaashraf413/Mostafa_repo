@@ -144,15 +144,16 @@ if __name__ == '__main__':
     input_imgs = utils.process_in(input_imgs)
     print('input batch shape', input_imgs.shape)
     
-    vae = VAE(k = 256)
-    decoded_imgs, mu_vec, log_var_vec = vae(input_imgs)
+    # vae = VAE(k = 256)
+    decoded_imgs, mu_vec, log_var_vec = vae(input_imgs.to('cuda'))
     print('output mu shape', mu_vec.shape)
     print('output lgo_var shape', log_var_vec.shape)
     
-    decoded_imgs = utils.process_out(decoded_imgs)
+    decoded_imgs = utils.process_out(decoded_imgs.cpu())
     
     for i in range(decoded_imgs.shape[0]):
-        plt.imshow(cv2.cvtColor(decoded_imgs[i], cv2.COLOR_BGR2RGB))
+        # plt.imshow(cv2.cvtColor(decoded_imgs[i], cv2.COLOR_BGR2RGB))
+        plt.imshow(decoded_imgs[i])
         plt.show()        
     
     
